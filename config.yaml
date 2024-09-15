@@ -1,5 +1,6 @@
 # config.yaml
-
+project_name: "gpt-2-pretraining"
+  
 # 데이터 관련 설정
 data:
   # url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
@@ -29,7 +30,7 @@ model:
 training:
   batch_size: 256
   seq_length: 50
-  epochs: 3
+  epochs: 20
   learning_rate: 3e-5
 
 # 기타 설정
