@@ -5,8 +5,6 @@ import os
 import argparse
 from utils.config import load_config
 from data.download_data import download_and_process_data
-from data.preprocess import preprocess_data
-from tokenizer.tokenizer import GPTTokenizer
 from training.train import train_model
 from interactive.interactive import interactive_mode
 

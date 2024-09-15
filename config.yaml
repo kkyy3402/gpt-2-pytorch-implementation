@@ -6,7 +6,7 @@ data:
   dir: "data"
   split: "train"
   name: "maywell/korean_textbooks"
-  raw_path: "data/input.txt"
+  raw_path: "data/input.txt" 
   processed_path: "data/processed_data.txt"
   subset_name: "claude_evol"
 
@@ -30,7 +30,7 @@ training:
   batch_size: 512
   seq_length: 50
   epochs: 3
-  learning_rate: 3e-4
+  learning_rate: 3e-5
 
 # 기타 설정
 device:

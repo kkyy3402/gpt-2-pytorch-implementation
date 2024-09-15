@@ -4,7 +4,6 @@ import tiktoken
 class GPTTokenizer:
     def __init__(self, config):
         self.config = config
-        self.vocab_size = config["tokenizer"]["vocab_size"]
         # tiktoken에서 기본 BPE 토크나이저를 로드 (GPT-2와 같은 모델을 기준으로 사용)
         self.tokenizer = tiktoken.get_encoding("gpt2")
 
