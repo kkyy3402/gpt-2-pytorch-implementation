@@ -13,7 +13,7 @@ data:
 # 토크나이저 관련 설정
 tokenizer:
   save_path: "tokenizer.json"
-  vocab_size: 50257  # 어휘 사전 크기
+  # vocab_size: 50257  # 어휘 사전 크기
 
 # Base Model 기준
 model:
@@ -27,7 +27,7 @@ model:
 
 # 학습 관련 설정
 training:
-  batch_size: 512
+  batch_size: 256
   seq_length: 50
   epochs: 3
   learning_rate: 3e-5

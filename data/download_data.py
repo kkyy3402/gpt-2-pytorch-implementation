@@ -34,16 +34,14 @@ def download_and_process_data(config):
         except Exception as e:
             print(f"데이터셋 로드 실패: {e}")
             return
+        
         print(f"데이터셋 '{dataset_name}' 로드 완료. 총 샘플 수: {len(dataset)}")
-
-        dataset = dataset[:1000]
-        print(len(dataset['text']))
-
+        
         with open(raw_path, 'w', encoding='utf-8') as f:
             f.write(' '.join(map(str, dataset['text'])))
         
         tokenizer = GPTTokenizer(config)
-        vocab_size = config['tokenizer']['vocab_size']
+        vocab_size = tokenizer.get_vocab_size()
         
         tokens = []
         print("데이터 인코딩 중...")
@@ -55,6 +53,10 @@ def download_and_process_data(config):
 
             if idx % 1000 == 0 and idx > 0:
                 print(f"인코딩 진행 중: {idx} / {len(dataset)}")
+
+            if idx == 1000:
+                break
+                
             text = preprocess_text(text)
             encoded = tokenizer.encode(text)
             

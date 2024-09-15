@@ -116,31 +116,3 @@ class GPT2(nn.Module):
         logits = self.fc_out(x)
 
         return logits
-
-def get_model(config, device):
-    model = GPT2(
-        vocab_size=config['tokenizer']['vocab_size'],
-        embed_size=config['model']['embed_size'],
-        num_layers=config['model']['num_layers'],
-        num_heads=config['model']['num_heads'],
-        ff_hidden_dim=config['model']['ff_hidden_dim'],
-        max_length=config['model']['max_length'],
-        dropout=config['model']['dropout']
-    ).to(device)
-    return model
-
-if __name__ == "__main__":
-    # 예제 모델 생성
-    from utils.config import load_config
-    config = load_config()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = GPT2(
-        vocab_size=config['tokenizer']['vocab_size'],
-        embed_size=config['model']['embed_size'],
-        num_layers=config['model']['num_layers'],
-        num_heads=config['model']['num_heads'],
-        ff_hidden_dim=config['model']['ff_hidden_dim'],
-        max_length=config['model']['max_length'],
-        dropout=config['model']['dropout']
-    ).to(device)
-    print(model)

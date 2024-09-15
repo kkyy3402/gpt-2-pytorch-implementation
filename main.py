@@ -16,8 +16,6 @@ def main():
     parser = argparse.ArgumentParser(description="GPT-2 Custom Pretrain 프로젝트")
     parser.add_argument('--interactive', action='store_true', help="인터랙티브 모드로 전환")
     args = parser.parse_args()
-
-    print(args)
     
     # 설정 로드
     config = load_config()
