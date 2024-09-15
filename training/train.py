@@ -59,6 +59,9 @@ def train_model(config):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.AdamW(model.parameters(), lr=float(config['training']['learning_rate']))
 
+    # Mixed Precision Scaler 초기화
+    scaler = torch.cuda.amp.GradScaler()
+
     # 학습 루프
     model.train()
     for epoch in range(config['training']['epochs']):
@@ -68,10 +71,14 @@ def train_model(config):
             targets = targets.to(device)
 
             optimizer.zero_grad()
-            outputs = model(inputs)  # (N, seq_length, vocab_size)
-            loss = criterion(outputs.view(-1, vocab_size), targets.view(-1))
-            loss.backward()
-            optimizer.step()
+
+            with torch.cuda.amp.autocast():
+                outputs = model(inputs)  # (N, seq_length, vocab_size)
+                loss = criterion(outputs.view(-1, vocab_size), targets.view(-1))
+
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             epoch_loss += loss.item()
 
