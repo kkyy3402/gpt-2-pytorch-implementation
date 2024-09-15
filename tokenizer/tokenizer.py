@@ -30,10 +30,14 @@ class SimpleTokenizer:
             self.id_to_token[idx] = word
     
     def encode(self, text):
-        return [self.token_to_id.get(word, self.token_to_id["<UNK>"]) for word in text.split()]
+        result = [self.token_to_id.get(word, self.token_to_id["<UNK>"]) for word in text.split()]
+        return result
     
     def decode(self, tokens):
-        return ' '.join([self.id_to_token.get(token, "<UNK>") for token in tokens])
+        decoded_texts = [' '.join([self.id_to_token.get(token.item() , "<UNK>") for token in sublist]) for sublist in tokens]
+        return decoded_texts
+    
+
     
     def save(self, path):
         os.makedirs(path, exist_ok=True)
@@ -47,7 +51,9 @@ class SimpleTokenizer:
         with open(os.path.join(path, "token_to_id.json"), 'r', encoding='utf-8') as f:
             self.token_to_id = json.load(f)
         with open(os.path.join(path, "id_to_token.json"), 'r', encoding='utf-8') as f:
-            self.id_to_token = json.load(f)
+            id_to_token_str_keys = json.load(f)
+            # 키를 정수로 변환
+            self.id_to_token = {int(k): v for k, v in id_to_token_str_keys.items()}
         print(f"토크나이저가 {path}에서 로드되었습니다.")
 
 def train_tokenizer(config):

@@ -43,7 +43,7 @@ def train_model(config):
     # 데이터 로드
     tokens = load_data(tokenizer, config['data']['processed_path'])
     dataset = TextDataset(tokens, config['training']['seq_length'])
-    dataloader = DataLoader(dataset, batch_size=config['training']['batch_size'], shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=config['training']['batch_size'], shuffle=True, num_workers=10)
 
     # 모델 초기화
     model = GPT2(
@@ -67,6 +67,7 @@ def train_model(config):
     for epoch in range(config['training']['epochs']):
         epoch_loss = 0
         for inputs, targets in tqdm(dataloader, desc=f"에포크 {epoch+1}/{config['training']['epochs']}"):
+
             inputs = inputs.to(device)
             targets = targets.to(device)
 
