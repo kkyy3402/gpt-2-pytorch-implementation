@@ -36,7 +36,7 @@ def download_and_process_data(config):
             return
         print(f"데이터셋 '{dataset_name}' 로드 완료. 총 샘플 수: {len(dataset)}")
 
-        dataset = dataset[:30000]
+        dataset = dataset[:1000]
         print(len(dataset['text']))
 
         with open(raw_path, 'w', encoding='utf-8') as f:

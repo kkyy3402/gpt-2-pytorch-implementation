@@ -4,47 +4,64 @@ import torch
 import torch.nn as nn
 import math
 
-class SelfAttention(nn.Module):
-    def __init__(self, embed_size, num_heads):
-        super(SelfAttention, self).__init__()
-        assert embed_size % num_heads == 0, "임베딩 크기는 헤드 수로 나눠 떨어져야 합니다."
-        
+# FlashAttention 설치 여부 확인
+try:
+    from flash_attn import flash_attn_func
+    flash_attention_available = True
+    print("### FlashAttention을 사용합니다.")
+except ImportError:
+    flash_attention_available = False
+    print("### FlashAttention이 설치되어 있지 않습니다. 기본 Attention을 사용합니다.")
+
+flash_attention_available = True
+
+class GPT2Attention(nn.Module):
+    def __init__(self, embed_size, num_heads, dropout=0.1):
+        super().__init__()
         self.num_heads = num_heads
         self.head_dim = embed_size // num_heads
-        
-        self.query = nn.Linear(embed_size, embed_size)
-        self.key = nn.Linear(embed_size, embed_size)
-        self.value = nn.Linear(embed_size, embed_size)
-        
-        self.fc_out = nn.Linear(embed_size, embed_size)
-    
+        assert embed_size % num_heads == 0, "Embedding size must be divisible by num_heads"
+
+        # Query, Key, Value 생성 (3 * embed_size)
+        self.qkv_proj = nn.Linear(embed_size, 3 * embed_size)
+        self.out_proj = nn.Linear(embed_size, embed_size)
+        self.dropout = nn.Dropout(dropout)
+
+        # FlashAttention이 설치되어 있으면 이를 사용하고, 그렇지 않으면 기본 Attention 사용
+        if flash_attention_available:
+            self.attention = flash_attn_func  # FlashAttention Function
+        else:
+            self.attention = nn.MultiheadAttention(embed_size, num_heads, dropout=dropout)
+
     def forward(self, x, mask=None):
-        N, seq_length, embed_size = x.shape
-        # 쿼리, 키, 값 생성
-        Q = self.query(x)  # (N, seq_length, embed_size)
-        K = self.key(x)
-        V = self.value(x)
+        batch_size, seq_length, embed_size = x.size()
+
+        # Query, Key, Value 생성
+        qkv = self.qkv_proj(x)  # (batch_size, seq_length, 3 * embed_size)
+        qkv = qkv.view(batch_size, seq_length, self.num_heads, 3 * self.head_dim)
+        qkv = qkv.permute(0, 2, 1, 3)  # (batch_size, num_heads, seq_length, 3 * head_dim)
+
+        q, k, v = qkv.chunk(3, dim=-1)  # Query, Key, Value 분리 (각각 (batch_size, num_heads, seq_length, head_dim))
+
+        # print(f"qkv.shape : {qkv.shape}")
+
+        if flash_attention_available:
+            # FlashAttention 사용
+            attn_output = self.attention(q, k, v, causal=True)  # FlashAttnFunc.forward를 적용
+            attn_output = attn_output.permute(1, 2, 0, 3).contiguous().view(batch_size, seq_length, embed_size)
+        else:
+            # 기존 PyTorch MultiheadAttention 사용: (seq_length, batch_size, embed_size) 형식으로 변환 필요
+            q = q.permute(2, 0, 1, 3).contiguous().view(seq_length, batch_size, -1)  # (seq_length, batch_size, num_heads * head_dim)
+            k = k.permute(2, 0, 1, 3).contiguous().view(seq_length, batch_size, -1)  # (seq_length, batch_size, num_heads * head_dim)
+            v = v.permute(2, 0, 1, 3).contiguous().view(seq_length, batch_size, -1)  # (seq_length, batch_size, num_heads * head_dim)
+            attn_output, _ = self.attention(q, k, v)
+            attn_output = attn_output.permute(1, 0, 2).contiguous().view(batch_size, seq_length, embed_size)
+
+        # 원래의 임베딩 크기로 변환
+        # print(f"attn_output.shape : {attn_output.shape}")
         
-        # 헤드 분할
-        Q = Q.view(N, seq_length, self.num_heads, self.head_dim).transpose(1, 2)  # (N, num_heads, seq_length, head_dim)
-        K = K.view(N, seq_length, self.num_heads, self.head_dim).transpose(1, 2)
-        V = V.view(N, seq_length, self.num_heads, self.head_dim).transpose(1, 2)
-        
-        # 스케일된 닷 프로덕트 어텐션
-        energy = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.head_dim)  # (N, num_heads, seq_length, seq_length)
-        
-        if mask is not None:
-            energy = energy.masked_fill(mask == 0, float("-1e20"))
-        
-        attention = torch.softmax(energy, dim=-1)  # (N, num_heads, seq_length, seq_length)
-        
-        out = torch.matmul(attention, V)  # (N, num_heads, seq_length, head_dim)
-        
-        out = out.transpose(1, 2).contiguous().view(N, seq_length, embed_size)  # (N, seq_length, embed_size)
-        
-        out = self.fc_out(out)  # (N, seq_length, embed_size)
-        
-        return out
+
+        return self.out_proj(attn_output)
 
 class FeedForward(nn.Module):
     def __init__(self, embed_size, ff_hidden_dim):
@@ -59,7 +76,7 @@ class FeedForward(nn.Module):
 class TransformerBlock(nn.Module):
     def __init__(self, embed_size, num_heads, ff_hidden_dim, dropout):
         super(TransformerBlock, self).__init__()
-        self.attention = SelfAttention(embed_size, num_heads)
+        self.attention = GPT2Attention(embed_size, num_heads)
         self.norm1 = nn.LayerNorm(embed_size)
         self.ff = FeedForward(embed_size, ff_hidden_dim)
         self.norm2 = nn.LayerNorm(embed_size)

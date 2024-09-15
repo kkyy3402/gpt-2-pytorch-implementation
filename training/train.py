@@ -46,6 +46,7 @@ def train_model(config):
     # 데이터 로드
     tokens = load_data(tokenizer, config['data']['processed_path'])
     dataset = TextDataset(tokens, config['training']['seq_length'])
+
     dataloader = DataLoader(dataset, batch_size=config['training']['batch_size'], shuffle=True, num_workers=10)
 
     # 모델 초기화
@@ -73,15 +74,6 @@ def train_model(config):
 
             inputs = inputs.to(device)
             targets = targets.to(device)
-
-            # 입력 및 타겟 디버깅 (필요시 주석 해제)
-            # print("### INPUTS")
-            # print(tokenizer.decode(inputs))
-            # print(inputs.shape)
-
-            # print("### TARGETS")
-            # print(tokenizer.decode(targets))
-            # print(targets.shape)
 
             optimizer.zero_grad()
 
