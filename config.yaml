@@ -34,9 +34,9 @@ model:
 
 # 학습 관련 설정
 training:
-  batch_size: 32
+  batch_size: 1024
   seq_length: 50
-  epochs: 1
+  epochs: 10
   learning_rate: 3e-4
 
 # 기타 설정
