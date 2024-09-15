@@ -33,8 +33,13 @@ class SimpleTokenizer:
         result = [self.token_to_id.get(word, self.token_to_id["<UNK>"]) for word in text.split()]
         return result
     
-    def decode(self, tokens):
-        decoded_texts = [' '.join([self.id_to_token.get(token.item() , "<UNK>") for token in sublist]) for sublist in tokens]
+    def decode(self, tokens, is_batch=True):
+
+        if is_batch:
+            decoded_texts = [' '.join([self.id_to_token.get(token.item() , "<UNK>") for token in sublist]) for sublist in tokens]
+        
+        decoded_texts = [' '.join([self.id_to_token.get(token, "<UNK>") for token in tokens])]
+        
         return decoded_texts
     
 

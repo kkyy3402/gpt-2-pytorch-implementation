@@ -37,7 +37,7 @@ def generate_text(model, tokenizer, device, prompt, max_length=100, temperature=
             next_token = top_k_indices.gather(-1, next_token)
             generated = torch.cat((generated, next_token), dim=1)
     
-    generated_text = tokenizer.decode(generated.squeeze().tolist())
+    generated_text = tokenizer.decode(generated.squeeze().tolist(), is_batch=False)
     return generated_text
 
 def interactive_mode(config):
