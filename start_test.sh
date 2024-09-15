@@ -1,1 +1,1 @@
-python main.py --interactive
+python3 main.py --interactive
