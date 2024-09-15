@@ -2,17 +2,20 @@
 
 # 데이터 관련 설정
 data:
-  url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
+  # url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
   dir: "data"
+  split: "train"
+  name: "maywell/korean_textbooks"
   raw_path: "data/input.txt"
   processed_path: "data/processed_data.txt"
+  subset_name: "claude_evol"
 
 # 토크나이저 관련 설정
 tokenizer:
-  save_path: "tokenizer"
-  vocab_size: 10000  # 어휘 사전 크기
+  save_path: "tokenizer.json"
+  vocab_size: 50257  # 어휘 사전 크기
 
-# Large Model 기준
+# Base Model 기준
 model:
   embed_size: 768
   num_layers: 12
@@ -22,26 +25,14 @@ model:
   dropout: 0.1
   save_path: "output.pth"
 
-# Small 모델 기준 
-# model:
-#   embed_size: 256          
-#   num_layers: 4            
-#   num_heads: 4             
-#   ff_hidden_dim: 1024      
-#   max_length: 256
-#   dropout: 0.1
-#   save_path: "output.pth"
-
 # 학습 관련 설정
 training:
-  batch_size: 64
+  batch_size: 512
   seq_length: 50
-  epochs: 1
+  epochs: 3
   learning_rate: 3e-4
 
 # 기타 설정
 device:
   use_cuda: true
   use_mps: true
-
-wandb_run_name: "gpt2_pretrain"  # 원하는 이름으로 변경

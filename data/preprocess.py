@@ -1,7 +1,6 @@
 # data/preprocess.py
 
 import os
-from tokenizer.tokenizer import SimpleTokenizer
 from utils.config import load_config
 
 def preprocess_data(config):

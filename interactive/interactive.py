@@ -1,7 +1,7 @@
 # interactive/interactive.py
 
 import torch
-from tokenizer.tokenizer import SimpleTokenizer
+from tokenizer.tokenizer import GPTTokenizer
 from model.gpt2_model import GPT2
 from utils.device_setup import get_device
 from utils.config import load_config
@@ -21,7 +21,7 @@ def load_model(config, device):
     model.eval()
     return model
 
-def generate_text(model, tokenizer, device, prompt, max_length=100, temperature=1.0, top_k=50):
+def generate_text(model, tokenizer, device, prompt, max_length=100, temperature=1.0, top_k=50, vocab_size=10000):
     tokens = tokenizer.encode(prompt)
     input_ids = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
     
@@ -29,24 +29,40 @@ def generate_text(model, tokenizer, device, prompt, max_length=100, temperature=
     with torch.no_grad():
         for _ in range(max_length):
             outputs = model(generated)
+            
+            if torch.isnan(outputs).any() or torch.isinf(outputs).any():
+                raise ValueError("모델 출력에 NaN 또는 무한대 값이 포함되어 있습니다.")
+            
             logits = outputs[:, -1, :] / temperature
-            # Top-K 샘플링
+            top_k = min(top_k, logits.size(-1))
+            
             top_k_logits, top_k_indices = torch.topk(logits, top_k, dim=-1)
+            
             probabilities = torch.softmax(top_k_logits, dim=-1)
+            
+            # probabilities 검증
+            assert torch.all(probabilities >= 0), "probabilities에 음수 값이 있습니다."
+            assert torch.all(probabilities <= 1), "probabilities에 1을 초과하는 값이 있습니다."
+            assert torch.allclose(probabilities.sum(dim=-1), torch.tensor(1.0, device=probabilities.device)), "probabilities의 합이 1이 아닙니다."
+            
             next_token = torch.multinomial(probabilities, num_samples=1)
             next_token = top_k_indices.gather(-1, next_token)
+            
+            # next_token 검증
+            assert torch.max(next_token) < config['tokenizer']['vocab_size'], "next_token이 vocab_size를 초과합니다."
+            
             generated = torch.cat((generated, next_token), dim=1)
     
     generated_text = tokenizer.decode(generated.squeeze().tolist(), is_batch=False)
     return generated_text
+
 
 def interactive_mode(config):
     device = get_device(config)
     print(f"사용 디바이스: {device}")
     
     # 토크나이저 로드
-    tokenizer = SimpleTokenizer()
-    tokenizer.load(config['tokenizer']['save_path'])
+    tokenizer = GPTTokenizer(config)
     
     # 모델 로드
     model = load_model(config, device)
@@ -66,7 +82,8 @@ def interactive_mode(config):
             prompt=prompt,
             max_length=config['model']['max_length'],
             temperature=1.0,
-            top_k=50
+            top_k=50, 
+            vocab_size=config["tokenizer"]["vocab_size"]
         )
         print(f"생성된 텍스트:\n{generated_text}\n")
 

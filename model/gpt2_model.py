@@ -97,6 +97,7 @@ class GPT2(nn.Module):
         
         x = self.layer_norm(x)
         logits = self.fc_out(x)
+
         return logits
 
 def get_model(config, device):
