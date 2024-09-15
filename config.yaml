@@ -1,0 +1,45 @@
+# config.yaml
+
+# 데이터 관련 설정
+data:
+  url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
+  dir: "data"
+  raw_path: "data/input.txt"
+  processed_path: "data/processed_data.txt"
+
+# 토크나이저 관련 설정
+tokenizer:
+  save_path: "tokenizer"
+  vocab_size: 10000  # 어휘 사전 크기
+
+# Large Model 기준
+# model:
+#   embed_size: 768
+#   num_layers: 12
+#   num_heads: 12
+#   ff_hidden_dim: 3072
+#   max_length: 512
+#   dropout: 0.1
+#   save_path: "gpt2_custom.pth"
+
+# Small 모델 기준 
+model:
+  embed_size: 256          
+  num_layers: 4            
+  num_heads: 4             
+  ff_hidden_dim: 1024      
+  max_length: 256
+  dropout: 0.1
+  save_path: "output.pth"
+
+# 학습 관련 설정
+training:
+  batch_size: 32
+  seq_length: 50
+  epochs: 1
+  learning_rate: 3e-4
+
+# 기타 설정
+device:
+  use_cuda: true
+  use_mps: true
