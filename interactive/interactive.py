@@ -38,8 +38,6 @@ def load_model(config, device, vocab_size):
 def generate_text(model, tokenizer, device, prompt, max_length=100, temperature=1.0, top_k=50, vocab_size=10000):
     tokens = tokenizer.encode(prompt)
     input_ids = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)  # LongTensor로 유지
-
-    print(f"input_ids : {input_ids}")
     
     # 모델을 fp16으로 변환 (입력 텐서 제외)
     model = model.half()  # 모델을 fp16으로 변환
