@@ -129,6 +129,10 @@ def train_model(config):
     scaler = torch.amp.GradScaler()
     best_val_loss = float('inf')
 
+    # Early Stopping 설정
+    early_stopping_patience = config['training'].get('early_stopping_patience', 5)  # 설정에서 patience를 받아오거나 기본값으로 5 사용
+    early_stopping_counter = 0
+
     # 학습 루프
     for epoch in range(config['training']['epochs']):
         print(f"에포크 {epoch+1}/{config['training']['epochs']} 시작")
@@ -143,6 +147,18 @@ def train_model(config):
 
         # 모델 저장
         best_val_loss = save_model_if_best(model, avg_val_loss, best_val_loss, config['model']['save_path'])
+
+        # Early Stopping 체크
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            early_stopping_counter = 0  # 모델 성능이 개선되면 counter 초기화
+        else:
+            early_stopping_counter += 1
+            print(f"Early stopping 카운터 증가: {early_stopping_counter}/{early_stopping_patience}")
+        
+        if early_stopping_counter >= early_stopping_patience:
+            print(f"검증 손실이 {early_stopping_patience} 에포크 동안 개선되지 않아 학습을 중단합니다.")
+            break
 
 if __name__ == "__main__":
     config = load_config()

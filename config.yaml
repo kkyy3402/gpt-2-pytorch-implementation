@@ -6,10 +6,10 @@ data:
   # url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
   dir: "data"
   split: "train"
-  name: "maywell/korean_textbooks"
+  name: "wikimedia/wikipedia"
   raw_path: "data/input.txt" 
   processed_path: "data/processed_data.txt"
-  subset_name: "claude_evol"
+  subset_name: "20231101.ko"
 
 # 토크나이저 관련 설정
 tokenizer:
@@ -32,6 +32,7 @@ training:
   seq_length: 50
   epochs: 20
   learning_rate: 3e-5
+  early_stopping_patience: 20
 
 # 기타 설정
 device:

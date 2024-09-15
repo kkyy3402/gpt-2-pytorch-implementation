@@ -13,8 +13,6 @@ except ImportError:
     flash_attention_available = False
     print("### FlashAttention이 설치되어 있지 않습니다. 기본 Attention을 사용합니다.")
 
-flash_attention_available = True
-
 class GPT2Attention(nn.Module):
     def __init__(self, embed_size, num_heads, dropout=0.1):
         super().__init__()
@@ -90,7 +88,7 @@ class TransformerBlock(nn.Module):
         return x
 
 class GPT2(nn.Module):
-    def __init__(self, vocab_size, embed_size=768, num_layers=12, num_heads=12, ff_hidden_dim=3072, max_length=512, dropout=0.1):
+    def __init__(self, vocab_size, embed_size=768, num_layers=12, num_heads=12, ff_hidden_dim=3072, max_length=512, dropout=0.1, is_train_mode=True):
         super(GPT2, self).__init__()
         self.embed_size = embed_size
         self.token_embedding = nn.Embedding(vocab_size, embed_size)
