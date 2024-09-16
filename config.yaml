@@ -3,18 +3,12 @@ project_name: "gpt-2-pretraining"
   
 # 데이터 관련 설정
 data:
-  # url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
   dir: "data"
   split: "train"
   name: "wikimedia/wikipedia"
   raw_path: "data/input.txt" 
   processed_path: "data/processed_data.txt"
   subset_name: "20231101.ko"
-
-# 토크나이저 관련 설정
-tokenizer:
-  save_path: "tokenizer.json"
-  # vocab_size: 50257  # 어휘 사전 크기
 
 # Base Model 기준
 model:
